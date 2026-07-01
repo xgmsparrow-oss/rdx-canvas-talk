@@ -174,57 +174,68 @@ export function SessionActionComposer({
         </button>
       </div>
 
-      {/* Helper row — meta label tags + shortcut hints */}
-      <div className="mt-2 flex flex-wrap items-center gap-1.5 px-1 text-[11px] text-muted-foreground">
-        <MetaTag tone="neutral">codex</MetaTag>
-        <MetaTag tone="neutral">gpt-5-high</MetaTag>
-        {(state === "ready" || state === "busy") && (
-          <MetaTag tone="success">tmux · {tmuxName}</MetaTag>
-        )}
-        {state === "connecting" && <MetaTag tone="warning">starting…</MetaTag>}
-        {state === "error" && <MetaTag tone="danger">runtime lost</MetaTag>}
-        {composerDisabled && state !== "connecting" && state !== "error" && (
-          <MetaTag tone="neutral">read-only</MetaTag>
-        )}
-        <span className="ml-auto hidden sm:inline">
-          <kbd className="rounded border border-border bg-background px-1 py-px font-mono text-[10px]">
-            Enter
-          </kbd>{" "}
-          send ·{" "}
-          <kbd className="rounded border border-border bg-background px-1 py-px font-mono text-[10px]">
-            Shift+Enter
-          </kbd>{" "}
-          newline
+      {/* Helper row — minimal meta line, ChatGPT-style */}
+      <div className="mt-2 flex items-center gap-2 px-2 text-[11px] text-muted-foreground/80">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <StatusDot state={state} />
+          <span className="truncate">
+            <span className="text-foreground/70">codex</span>
+            <span className="mx-1 text-muted-foreground/40">/</span>
+            <span>gpt-5-high</span>
+            {(state === "ready" || state === "busy") && (
+              <>
+                <span className="mx-1.5 text-muted-foreground/40">·</span>
+                <span>{tmuxName}</span>
+              </>
+            )}
+            {state === "connecting" && (
+              <>
+                <span className="mx-1.5 text-muted-foreground/40">·</span>
+                <span>starting…</span>
+              </>
+            )}
+            {state === "error" && (
+              <>
+                <span className="mx-1.5 text-muted-foreground/40">·</span>
+                <span className="text-destructive/80">runtime lost</span>
+              </>
+            )}
+            {composerDisabled && state !== "connecting" && state !== "error" && (
+              <>
+                <span className="mx-1.5 text-muted-foreground/40">·</span>
+                <span>read-only</span>
+              </>
+            )}
+          </span>
+        </div>
+        <span className="ml-auto hidden text-muted-foreground/60 sm:inline">
+          <kbd className="font-sans text-muted-foreground/70">Enter</kbd>
+          <span className="mx-1">to send</span>
+          <span className="text-muted-foreground/40">·</span>
+          <kbd className="ml-1 font-sans text-muted-foreground/70">Shift + Enter</kbd>
+          <span className="ml-1">for newline</span>
         </span>
       </div>
     </div>
   );
 }
 
-/* ---------- Meta tag ---------- */
+/* ---------- Status dot ---------- */
 
-function MetaTag({
-  children,
-  tone = "neutral",
-}: {
-  children: React.ReactNode;
-  tone?: "neutral" | "success" | "warning" | "danger" | "info";
-}) {
-  const styles: Record<string, string> = {
-    neutral: "border-border bg-surface-sunken text-foreground/70",
-    success: "border-success/30 bg-success/10 text-success",
-    warning: "border-warning/40 bg-warning/15 text-warning-foreground",
-    danger: "border-destructive/30 bg-destructive/10 text-destructive",
-    info: "border-info/30 bg-info/10 text-info",
-  };
-  return (
-    <span
-      className={`inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10.5px] uppercase leading-none tracking-wide ${styles[tone]}`}
-    >
-      {children}
-    </span>
-  );
+function StatusDot({ state }: { state: RuntimeState }) {
+  const tone =
+    state === "ready"
+      ? "bg-success"
+      : state === "busy"
+      ? "bg-info animate-pulse"
+      : state === "connecting"
+      ? "bg-warning animate-pulse"
+      : state === "error"
+      ? "bg-destructive"
+      : "bg-muted-foreground/40";
+  return <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${tone}`} />;
 }
+
 
 
 /* ---------- Runtime Bar ---------- */
