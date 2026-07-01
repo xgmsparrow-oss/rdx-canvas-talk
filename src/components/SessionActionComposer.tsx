@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
+  AudioLines,
   Check,
   ChevronDown,
   Loader2,
+  Mic,
   MoreHorizontal,
   Plus,
   Square,
@@ -101,85 +103,129 @@ export function SessionActionComposer({
         </div>
       )}
 
-      {/* Prompt composer */}
+      {/* Prompt composer — ChatGPT-style pill */}
       <div
         className={[
-          "mt-2 rounded-2xl border bg-composer transition-colors",
+          "mt-2 flex items-center gap-1 rounded-full border bg-composer px-2 py-1.5 transition-colors",
           composerDisabled
             ? "border-composer-border/70 opacity-80"
             : "border-composer-border shadow-[var(--shadow-composer)] focus-within:border-foreground/25",
         ].join(" ")}
       >
-        <div className="flex items-end gap-1.5 px-2.5 py-2">
-          <button
-            type="button"
-            disabled={composerDisabled}
-            className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
-            aria-label="Attach"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+        <button
+          type="button"
+          disabled={composerDisabled}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+          aria-label="Attach"
+        >
+          <Plus className="h-5 w-5" />
+        </button>
 
-          <textarea
-            ref={taRef}
-            rows={1}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            disabled={composerDisabled}
-            placeholder={
-              composerDisabled
-                ? state === "connecting"
-                  ? "Runtime is starting…"
-                  : "Resume or attach a runtime to send prompts"
-                : "Ask anything"
-            }
-            className="min-h-[28px] flex-1 resize-none self-center border-0 bg-transparent px-1 py-1.5 text-[14px] leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed"
-          />
+        <textarea
+          ref={taRef}
+          rows={1}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          disabled={composerDisabled}
+          placeholder={
+            composerDisabled
+              ? state === "connecting"
+                ? "Runtime is starting…"
+                : "Resume or attach a runtime to send prompts"
+              : "Ask anything"
+          }
+          className="min-h-[28px] max-h-[200px] flex-1 resize-none self-center border-0 bg-transparent px-2 py-1.5 text-[15px] leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed"
+        />
 
-          <div className="mb-0.5 hidden shrink-0 items-center gap-1 rounded-full bg-accent/60 px-2 py-1 text-[11px] font-medium text-muted-foreground sm:flex">
-            <Sparkles className="h-3 w-3" />
-            {MODEL_LABEL}
-          </div>
+        <button
+          type="button"
+          disabled={composerDisabled}
+          className="hidden h-8 shrink-0 items-center gap-0.5 rounded-full px-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40 sm:inline-flex"
+        >
+          High
+          <ChevronDown className="h-3.5 w-3.5" />
+        </button>
 
-          <button
-            type="button"
-            disabled={!canSend && !showStop}
-            className={[
-              "mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all",
-              showStop
-                ? "bg-foreground text-background hover:opacity-90"
-                : canSend
-                  ? "bg-foreground text-background hover:opacity-90"
-                  : "bg-muted text-muted-foreground",
-            ].join(" ")}
-            aria-label={showStop ? "Stop" : "Send"}
-          >
-            {showStop ? (
-              <Square className="h-3 w-3 fill-current" />
-            ) : (
-              <ArrowUp className="h-4 w-4" />
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          disabled={composerDisabled}
+          className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40 sm:flex"
+          aria-label="Voice input"
+        >
+          <Mic className="h-4 w-4" />
+        </button>
 
-        <div className="flex items-center justify-between px-3 pb-1.5 text-[11px] text-muted-foreground">
-          <span className="hidden sm:inline">
-            <kbd className="rounded border border-border bg-background px-1 py-px font-mono text-[10px]">
-              Enter
-            </kbd>{" "}
-            send ·{" "}
-            <kbd className="rounded border border-border bg-background px-1 py-px font-mono text-[10px]">
-              Shift+Enter
-            </kbd>{" "}
-            newline
-          </span>
-          <span className="ml-auto sm:hidden">{MODEL_LABEL}</span>
-          <span className="hidden sm:inline">Prompts stream through tmux · RDX-managed</span>
-        </div>
+        <button
+          type="button"
+          disabled={!canSend && !showStop}
+          className={[
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all",
+            showStop || canSend
+              ? "bg-foreground text-background hover:opacity-90"
+              : "bg-foreground/85 text-background",
+          ].join(" ")}
+          aria-label={showStop ? "Stop" : "Send"}
+        >
+          {showStop ? (
+            <Square className="h-3.5 w-3.5 fill-current" />
+          ) : (
+            <AudioLines className="h-4 w-4" />
+          )}
+        </button>
+      </div>
+
+      {/* Helper row — meta label tags + shortcut hints */}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5 px-1 text-[11px] text-muted-foreground">
+        <MetaTag tone="neutral">codex</MetaTag>
+        <MetaTag tone="neutral">gpt-5-high</MetaTag>
+        {(state === "ready" || state === "busy") && (
+          <MetaTag tone="success">tmux · {tmuxName}</MetaTag>
+        )}
+        {state === "connecting" && <MetaTag tone="warning">starting…</MetaTag>}
+        {state === "error" && <MetaTag tone="danger">runtime lost</MetaTag>}
+        {composerDisabled && state !== "connecting" && state !== "error" && (
+          <MetaTag tone="neutral">read-only</MetaTag>
+        )}
+        <span className="ml-auto hidden sm:inline">
+          <kbd className="rounded border border-border bg-background px-1 py-px font-mono text-[10px]">
+            Enter
+          </kbd>{" "}
+          send ·{" "}
+          <kbd className="rounded border border-border bg-background px-1 py-px font-mono text-[10px]">
+            Shift+Enter
+          </kbd>{" "}
+          newline
+        </span>
       </div>
     </div>
   );
 }
+
+/* ---------- Meta tag ---------- */
+
+function MetaTag({
+  children,
+  tone = "neutral",
+}: {
+  children: React.ReactNode;
+  tone?: "neutral" | "success" | "warning" | "danger" | "info";
+}) {
+  const styles: Record<string, string> = {
+    neutral: "border-border bg-surface-sunken text-foreground/70",
+    success: "border-success/30 bg-success/10 text-success",
+    warning: "border-warning/40 bg-warning/15 text-warning-foreground",
+    danger: "border-destructive/30 bg-destructive/10 text-destructive",
+    info: "border-info/30 bg-info/10 text-info",
+  };
+  return (
+    <span
+      className={`inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10.5px] uppercase leading-none tracking-wide ${styles[tone]}`}
+    >
+      {children}
+    </span>
+  );
+}
+
 
 /* ---------- Runtime Bar ---------- */
 
