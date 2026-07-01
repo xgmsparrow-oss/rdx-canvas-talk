@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
+  AudioLines,
   Check,
   ChevronDown,
   Loader2,
+  Mic,
   MoreHorizontal,
   Plus,
   Square,
